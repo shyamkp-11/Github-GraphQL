@@ -1,0 +1,79 @@
+query GitHubUsersIdProgLangQuery($first: Int!, $user: String!, $after: String) {
+    user(login: $user) {
+        repositories(first : $first after: $after) {
+          totalCount
+          nodes {
+            id
+            languages(first: 100) {
+              totalCount
+              nodes {
+                name
+              }
+            }
+          }
+        }
+      }
+}
+
+query GitHubUsersQuery($first: Int!, $user: String!, $after: String) {
+    user(login: $user) {
+        name
+        url
+        repositories(first : $first after: $after) {
+          totalCount
+          nodes {
+            name
+            id
+            stargazers {
+              totalCount
+            }
+            languages(first: 100) {
+              totalCount
+              nodes {
+                name
+              }
+            }
+          }
+        }
+      }
+}
+
+query GitHubOrganizationIdProgLangQuery($first: Int!, $org: String!, $after: String) {
+    organization(login: $org) {
+        name
+        repositories(first : $first after: $after) {
+          totalCount
+          nodes {
+            id
+            languages(first: 100) {
+              totalCount
+              nodes {
+                name
+              }
+            }
+          }
+        }
+      }
+}
+query GitHubOrganizationQuery($first: Int!, $org: String!, $after: String) {
+    organization(login: $org) {
+        name
+        url
+        repositories(first : $first after: $after) {
+          totalCount
+          nodes {
+            name
+            id
+            stargazers {
+              totalCount
+            }
+            languages(first: 100) {
+              totalCount
+              nodes {
+                name
+              }
+            }
+          }
+        }
+      }
+}
