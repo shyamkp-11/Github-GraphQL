@@ -9,6 +9,6 @@ public class Constants {
 
     public static final String GITHUB_NO_LANGUAGE_MAP_KEY = "NONE";
 
-    public static final int GITHUB_REPOS_FETCH_ONE_GO_COUNT = 10;
+    public static final int GITHUB_REPOS_FETCH_ONE_GO_COUNT = 100;
 
 }

@@ -8,24 +8,13 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import retrofit2.Retrofit;
 
 public class ApiClient {
-
-    private static Retrofit retrofit = null;
 
     private static OkHttpClient okHttpClient = null;
 
     private static ApolloClient apolloClient = null;
 
-    public static Retrofit getClient() {
-        if (retrofit == null) {
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(Constants.GITHUB_API_BASE_URL)
-                    .build();
-        }
-        return retrofit;
-    }
 
     public static OkHttpClient getOkHttpClient() {
         if (okHttpClient == null) {

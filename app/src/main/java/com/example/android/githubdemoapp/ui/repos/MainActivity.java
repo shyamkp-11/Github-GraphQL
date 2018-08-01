@@ -37,26 +37,24 @@ public class MainActivity extends AppCompatActivity {
                         GitHubRemote.getGitHubRemote(ApiClient.getApolloClient())));
 
 
-        Disposable disposable = reposViewModel.getOrgRepoIdProgLangs("google" )
+        Disposable disposable = reposViewModel.getUserRepoIdProgLangs("spate159" )
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Map<String, List<Repo>>>() {
                     @Override
                     public void accept(Map<String, List<Repo>> stringListHashMap) throws Exception {
                         for (Map.Entry<String, List<Repo>> entry : stringListHashMap.entrySet()) {
-                            Log.d(TAG, "Lang : " + entry.getKey());
                             String idStr = "";
                             for (Repo repo : entry.getValue()) {
                                 if (entry.getValue() != null) {
-                                    idStr += ", " + repo.getId() + (" stars - ")+ repo.getStars();
+                                    idStr += ", " + repo.getName() + (" stars - ")+ repo.getStars();
                                 }
                             }
-                            Log.d(TAG, "\t" + idStr);
+                            Log.d(TAG, "Lang: "+entry.getKey()+ "\t" + idStr);
                         }
                     }
                 });
         this.disposable.add(disposable);
-
 
     }
 
