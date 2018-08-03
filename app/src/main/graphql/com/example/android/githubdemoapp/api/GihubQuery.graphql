@@ -1,0 +1,64 @@
+
+query GitHubUsersQuery($first: Int!, $user: String!, $after: String) {
+  user(login: $user) {
+    name
+    url
+    repositories(first: $first, after: $after) {
+      totalCount
+      pageInfo {
+        hasNextPage
+      }
+
+      edges {
+        cursor
+        node {
+          name
+          owner {
+            login
+          }
+          stargazers {
+            totalCount
+          }
+          languages(first: 100) {
+            totalCount
+            nodes {
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+query GitHubOrganizationQuery($first: Int!, $org: String!, $after: String) {
+organization(login: $org) {
+  name
+  url
+  repositories(first: $first, after: $after) {
+    totalCount
+    pageInfo {
+      hasNextPage
+    }
+
+    edges {
+      cursor
+      node {
+        name
+        owner {
+          login
+        }
+        stargazers {
+          totalCount
+        }
+        languages(first: 100) {
+          totalCount
+          nodes {
+            name
+          }
+        }
+      }
+    }
+  }
+}
+}
