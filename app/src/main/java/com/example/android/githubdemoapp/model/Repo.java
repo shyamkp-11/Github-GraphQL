@@ -7,14 +7,14 @@ import java.util.Set;
 
 public class Repo implements RepoIdAndLang{
 
-    private String id;
     private String name;
     private int stars;
     @Nullable
     private Set<String> progLangs;
+    private String owner;
 
-    public Repo(String id, String name, int stars, Set<String> progLangs) {
-        this.id = id;
+    public Repo(String owner, String name, int stars, Set<String> progLangs) {
+        this.owner = owner;
         this.name = name;
         this.stars = stars;
         this.progLangs = progLangs;
@@ -23,7 +23,7 @@ public class Repo implements RepoIdAndLang{
     @Override
     public String toString() {
         return "Repo{" +
-                "id='" + id + '\'' +
+                "owner='" + owner + '\'' +
                 ", name='" + name + '\'' +
                 ", stars='" + stars + '\'' +
                 ", progLangs=" + progLangs +
@@ -33,7 +33,7 @@ public class Repo implements RepoIdAndLang{
     @NonNull
     @Override
     public String getRepoId() {
-        return id;
+        return owner;
     }
 
     @NonNull
@@ -42,8 +42,8 @@ public class Repo implements RepoIdAndLang{
         return progLangs;
     }
 
-    public String getId() {
-        return id;
+    public String getOwner() {
+        return owner;
     }
 
     public String getName() {

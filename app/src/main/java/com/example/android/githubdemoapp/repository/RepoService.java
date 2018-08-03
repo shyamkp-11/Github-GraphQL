@@ -3,19 +3,16 @@ package com.example.android.githubdemoapp.repository;
 import android.support.annotation.NonNull;
 
 import com.apollographql.apollo.ApolloClient;
-import com.example.android.githubdemoapp.model.Repo;
+import com.apollographql.apollo.api.Response;
+import com.example.android.githubdemoapp.api.GitHubOrganizationQuery;
+import com.example.android.githubdemoapp.api.GitHubUsersQuery;
 import com.example.android.githubdemoapp.model.ApiInterface;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.List;
 
 import io.reactivex.Observable;
 
 import okhttp3.OkHttpClient;
-import okhttp3.ResponseBody;
 
 public class RepoService {
 
@@ -23,7 +20,6 @@ public class RepoService {
     private ApolloClient mApolloClient;
     private ApiInterface mApiInterface;
     private static RepoService instance;
-    private Observable<HashMap<String, List<Repo>>> mObservable;
 
     private RepoService(OkHttpClient okHttpClient, ApolloClient apolloClient, ApiInterface apiInterface) {
         this.mOkHttpClient = okHttpClient;
@@ -40,45 +36,17 @@ public class RepoService {
     }
 
 
+    public Observable<List<Response<GitHubUsersQuery.Data>>> getUserRepos(@NonNull String username, boolean forceReload) {
 
-    public Observable<HashMap<String, List<Repo>>> getUserRepos(@NonNull String username, boolean forceReload) {
-        // Todo differentiate mobservable
-        if(mObservable != null && !forceReload) {
-            return mObservable;
-        }
 
-        return mApiInterface.getUserRepoIdsAndLanguages(username);
+        return mApiInterface.getUserRepos(username);
+
 
     }
 
-    public Observable<HashMap<String, List<Repo>>> getOrgRepos(@NonNull String orgname, boolean forceReload) {
-        if(mObservable != null && !forceReload) {
-            return mObservable;
-        }
+    public Observable<List<Response<GitHubOrganizationQuery.Data>>> getOrgRepos(@NonNull String orgname, boolean forceReload) {
 
-        return mApiInterface.getOrgRepoIdsAndLanguages(orgname);
+        return mApiInterface.getOrgRepos(orgname);
 
-    }
-
-    public static String getStringFromRetrofitResponse(@NonNull ResponseBody responseBody) {
-
-        BufferedReader reader = null;
-        StringBuilder sb = new StringBuilder();
-
-
-        reader = new BufferedReader(new InputStreamReader(responseBody.byteStream()));
-
-        String line;
-
-        try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        return sb.toString();
     }
 }
