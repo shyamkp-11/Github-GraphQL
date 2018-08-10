@@ -19,6 +19,12 @@ import com.example.android.githubdemoapp.ApiClient;
 import com.example.android.githubdemoapp.R;
 import com.example.android.githubdemoapp.api.GithubDetailQuery;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -87,7 +93,17 @@ public class RepoDetailsActivity extends AppCompatActivity{
         if (repository != null) {
             name.setText(repository.name());
             description.setText(repository.description());
-            createdAt.setText(repository.createdAt().toString());
+            DateFormat formatter = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ssZ");
+            Date date;
+            try {
+                date = formatter.parse(repository.createdAt().toString().replaceAll("Z$", "+0000"));
+                Log.d(TAG, date.toString());
+                DateFormat displayFormat = new SimpleDateFormat("MMMM dd yy h:mma", Locale.ENGLISH);
+                createdAt.setText(displayFormat.format(date));
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
 
         }
     }
