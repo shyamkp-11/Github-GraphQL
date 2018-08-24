@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'realm-android'
 apply plugin: 'com.apollographql.android'
 android {
     compileSdkVersion rootProject.ext.compile_sdk_version
@@ -23,9 +22,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    realm {
-        syncEnabled = true;
-    }
 }
 
 dependencies {
@@ -45,4 +41,7 @@ dependencies {
     implementation 'com.apollographql.apollo:apollo-runtime:0.4.1'
     implementation "com.apollographql.apollo:apollo-android-support:0.4.1"
     implementation "com.apollographql.apollo:apollo-rx2-support:0.4.1"
+
+    implementation "android.arch.persistence.room:runtime:$rootProject.archRoomVersion"
+    annotationProcessor "android.arch.persistence.room:compiler:$rootProject.archRoomVersion"
 }

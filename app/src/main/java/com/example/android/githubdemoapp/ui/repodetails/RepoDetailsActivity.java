@@ -1,8 +1,12 @@
 package com.example.android.githubdemoapp.ui.repodetails;
 
+import android.arch.persistence.room.Database;
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -11,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.apollographql.apollo.ApolloCall;
 import com.apollographql.apollo.api.Response;
@@ -18,11 +23,14 @@ import com.apollographql.apollo.rx2.Rx2Apollo;
 import com.example.android.githubdemoapp.ApiClient;
 import com.example.android.githubdemoapp.R;
 import com.example.android.githubdemoapp.api.GithubDetailQuery;
+import com.example.android.githubdemoapp.db.AppDatabase;
+import com.example.android.githubdemoapp.model.SimpleRepoModel;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import io.reactivex.Observer;
@@ -49,6 +57,8 @@ public class RepoDetailsActivity extends AppCompatActivity{
     private String owner;
 
     private CompositeDisposable disposables = new CompositeDisposable();
+
+    private AppDatabase mDatabase;
 
     public static Intent newIntent(Context context, String ownerName, String repositoryFullName) {
         Intent intent = new Intent(context, RepoDetailsActivity.class);
@@ -80,23 +90,27 @@ public class RepoDetailsActivity extends AppCompatActivity{
         description = (TextView) findViewById(R.id.tv_repository_description);
         createdAt = (TextView) findViewById(R.id.tv_created_at);
 
+        mDatabase =  AppDatabase.getInstance(getApplicationContext());
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        fetchRepositoryDetails();
+//        fetchRepositoryDetails();
+
+        showDataFromDborFetchFromNetwork(false);
     }
 
-    private void setData(GithubDetailQuery.Data data) {
+    private void setData(SimpleRepoModel simpleRepoModel) {
+
         content.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
 
-        final GithubDetailQuery.Repository repository = data.repository();
-        if (repository != null) {
-            name.setText(repository.name());
-            description.setText(repository.description());
+        if (simpleRepoModel != null) {
+            name.setText(simpleRepoModel.getRepoName());
+            description.setText(simpleRepoModel.getRepoDetail());
             DateFormat formatter = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ssZ");
             Date date;
             try {
-                date = formatter.parse(repository.createdAt().toString().replaceAll("Z$", "+0000"));
+                date = formatter.parse(simpleRepoModel.getDateString().replaceAll("Z$", "+0000"));
                 Log.d(TAG, date.toString());
                 DateFormat displayFormat = new SimpleDateFormat("MMMM dd yy h:mma", Locale.ENGLISH);
                 createdAt.setText(displayFormat.format(date));
@@ -108,6 +122,24 @@ public class RepoDetailsActivity extends AppCompatActivity{
         }
     }
 
+    private void insertDataToDb(GithubDetailQuery.Data data) {
+
+        final GithubDetailQuery.Repository repository = data.repository();
+
+        // insert in db
+        SimpleRepoModel repoModel = new SimpleRepoModel(repoFullName, repository.description(), repository.createdAt().toString());
+
+        mDatabase.repoDao().insertSimpleRepoModel(repoModel);
+
+        Log.d(TAG, "Data inserted");
+    }
+
+    private SimpleRepoModel getSimpleRepoModelFromDb(String repoFullName) {
+
+        return mDatabase.repoDao().loadSimpleRepoModel(repoFullName);
+    }
+
+
     private void fetchRepositoryDetails() {
 
         ApolloCall<GithubDetailQuery.Data> repoDetailQuery = ApiClient.getApolloClient()
@@ -116,7 +148,6 @@ public class RepoDetailsActivity extends AppCompatActivity{
         //Example call using Rx2Support
         Rx2Apollo.from(repoDetailQuery)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(new Observer<Response<GithubDetailQuery.Data>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -125,19 +156,45 @@ public class RepoDetailsActivity extends AppCompatActivity{
 
                     @Override
                     public void onNext(Response<GithubDetailQuery.Data> dataResponse) {
-                        setData(dataResponse.data());
+                        insertDataToDb(dataResponse.data());
                     }
 
                     @Override
                     public void onError(Throwable e) {
-
                     }
 
                     @Override
                     public void onComplete() {
-
+                        showDataFromDborFetchFromNetwork(false);
                     }
                 });
+
+    }
+
+    private void showDataFromDborFetchFromNetwork(boolean forceNetworkLoad) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+
+                // check db for data
+                SimpleRepoModel simpleRepoModel = getSimpleRepoModelFromDb(repoFullName);
+
+                // if db doesnt have cached data then network fetch
+                if(simpleRepoModel!=null && !forceNetworkLoad) {
+                    // Show data in main thread
+                    new Handler(getApplicationContext().getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // display data on mainthread
+                              setData(simpleRepoModel);
+                        }
+                    });
+                } else {
+                    Log.d(TAG, "Network Fetch");
+                    fetchRepositoryDetails();
+                }
+            }
+        });
     }
 
     @Override
