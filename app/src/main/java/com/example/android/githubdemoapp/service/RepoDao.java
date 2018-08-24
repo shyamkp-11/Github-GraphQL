@@ -20,4 +20,7 @@ public abstract class RepoDao {
     @Insert
     public abstract void insertSimpleRepoModel(SimpleRepoModel simpleRepoModel);
 
+    @Query("DELETE FROM SimpleRepoModel")
+    public abstract void clearTable();
+
 }

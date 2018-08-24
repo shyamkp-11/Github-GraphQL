@@ -2,6 +2,7 @@ package com.example.android.githubdemoapp.ui.repos;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,6 +25,7 @@ import com.example.android.githubdemoapp.Constants;
 import com.example.android.githubdemoapp.R;
 import com.example.android.githubdemoapp.api.GitHubOrganizationQuery;
 import com.example.android.githubdemoapp.api.GitHubUsersQuery;
+import com.example.android.githubdemoapp.db.AppDatabase;
 import com.example.android.githubdemoapp.model.Repo;
 import com.example.android.githubdemoapp.remote.GitHubRemote;
 import com.example.android.githubdemoapp.repository.RepoService;
@@ -37,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.RunnableFuture;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -74,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements GithubDemoAppNavi
         repoRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 
-
         EditText searchEditText = findViewById(R.id.et_search_name);
         searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -96,6 +98,15 @@ public class MainActivity extends AppCompatActivity implements GithubDemoAppNavi
 
     private void fetchQueries(String searchString) {
 
+        // Clear existing cache database
+        AsyncTask.execute(new Runnable() {
+                              @Override
+                              public void run() {
+                                AppDatabase.getInstance(getApplicationContext()).repoDao().clearTable();
+                              }
+                          }
+        );
+
 
         unsub();
         RepoService repoService = RepoService.getRespoService(ApiClient.getOkHttpClient(),
@@ -104,8 +115,8 @@ public class MainActivity extends AppCompatActivity implements GithubDemoAppNavi
 
         Observable<HashMap<String, List<Repo>>> observable;
 
-        if(isSearchForUser) {
-             observable = repoService.getUserRepos(searchString, true)
+        if (isSearchForUser) {
+            observable = repoService.getUserRepos(searchString, true)
                     .subscribeOn(Schedulers.io())
                     .map(userMap)
                     .map((Function<HashMap<String, List<Repo>>, HashMap<String, List<Repo>>>) stringListHashMap -> SortUtils.sortProgLangByRepoCount(stringListHashMap, false))
@@ -120,19 +131,19 @@ public class MainActivity extends AppCompatActivity implements GithubDemoAppNavi
                     .observeOn(AndroidSchedulers.mainThread());
         }
 
-            observable.subscribe(new Observer<HashMap<String,List<Repo>>>() {
+        observable.subscribe(new Observer<HashMap<String, List<Repo>>>() {
 
-                @Override
-                public void onSubscribe(Disposable d) {
-                    sub = d;
-                }
+            @Override
+            public void onSubscribe(Disposable d) {
+                sub = d;
+            }
 
-                @Override
+            @Override
             public void onNext(HashMap<String, List<Repo>> progLangRepoMap) {
                 progressBar.setVisibility(View.GONE);
 
-                if(progLangRepoMap.size() == 0) {
-                    Toast.makeText(MainActivity.this, "No Repository for the user",Toast.LENGTH_SHORT ).show();
+                if (progLangRepoMap.size() == 0) {
+                    Toast.makeText(MainActivity.this, "No Repository for the user", Toast.LENGTH_SHORT).show();
                 }
 
                 repoAdapter.setRepos(progLangRepoMap);
@@ -152,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements GithubDemoAppNavi
             public void onError(Throwable e) {
                 progressBar.setVisibility(View.GONE);
                 Log.e(TAG, e.toString());
-                Toast.makeText(MainActivity.this, e.getMessage(),Toast.LENGTH_LONG ).show();
+                Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                 unsub();
             }
 
@@ -312,15 +323,15 @@ public class MainActivity extends AppCompatActivity implements GithubDemoAppNavi
         boolean checked = ((RadioButton) view).isChecked();
 
         // Check which radio button was clicked
-        switch(view.getId()) {
+        switch (view.getId()) {
             case R.id.radio_user:
                 if (checked)
                     isSearchForUser = true;
-                    break;
+                break;
             case R.id.radio_organization:
                 if (checked)
                     isSearchForUser = false;
-                    break;
+                break;
         }
     }
 

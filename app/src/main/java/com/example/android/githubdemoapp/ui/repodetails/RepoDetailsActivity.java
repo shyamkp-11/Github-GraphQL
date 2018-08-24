@@ -45,7 +45,7 @@ public class RepoDetailsActivity extends AppCompatActivity{
 
     public static final String TAG = RepoDetailsActivity.class.getSimpleName();
     private static final String ARG_REPOSITORY_FULL_NAME = "arg_repo_full_name";
-    private static final String ARG_OWNER_NAME = "arg_owner_name";
+    private static final String ARG_OWNER_NAME = "spat";
 
     ViewGroup content;
     ProgressBar progressBar;
